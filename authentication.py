@@ -38,7 +38,7 @@ users_db: list[User] = []
 users_db.append(
     User(
         id=str(uuid.uuid4()),
-        username="samm",
+        username="user1",
         hashed_password=pwd_context.hash("password123")
     )
 )
