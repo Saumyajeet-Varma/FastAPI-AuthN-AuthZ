@@ -20,7 +20,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # -------- Models --------
 
-class LoginRequest(BaseModel):
+class AuthRequest(BaseModel):
     username: str
     password: str
 
@@ -123,8 +123,33 @@ def require_admin(user=Depends(get_current_user)):
 
 # -------- Routes --------
 
+@app.post("/register")
+def register(data: AuthRequest):
+
+    existing_user = get_user(data.username)
+
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username already exists")
+
+    hashed_password = pwd_context.hash(data.password)
+
+    new_user = User(
+        id=str(uuid.uuid4()),
+        username=data.username,
+        hashed_password=hashed_password,
+        role="user"  # default role
+    )
+
+    users_db.append(new_user)
+
+    return {
+        "message": "User registered successfully",
+        "user_id": new_user.id,
+        "role": new_user.role
+    }
+
 @app.post("/login")
-def login(data: LoginRequest):
+def login(data: AuthRequest):
 
     user = get_user(data.username)
 
